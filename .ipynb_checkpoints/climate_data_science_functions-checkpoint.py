@@ -81,3 +81,66 @@ def cyclic_contourf(ax,
     data,lon = add_cyclic_point(da, coord=da.lon)
     cf = ax.contourf(lon, da.lat, data, **kwargs)
     return cf
+
+
+def symmetric_y_axis(ax):
+    '''
+    Sets the limits on the y-axis such that the min and max are
+    symmetric about zero. This is useful for plots of differences
+    between two datasets.
+    
+    Parameters:
+    -----------
+    ax : matplotlib.axes
+        Matplotlib axis object
+        
+    Returns:
+    --------
+    n/a
+    
+    Author: Ben Buchovecky
+    '''
+    
+    ax.set_ylim(-max(np.abs(ax.get_ylim())), max(np.abs(ax.get_ylim())))
+    
+
+def coslat_area_avg(da):
+    '''
+    Computes the cosine(latitude) weighted average.
+
+    Parameters:
+    -----------
+    da : xr.DataArray
+        Lat/lon gridded data array
+        
+    Returns:
+    --------
+    avg : xr.DataArray
+        Cosine(latitude) weighted average data array
+        
+    Author: Ben Buchovecky
+    '''
+    
+    lat = da.lat
+    return (da.mean(dim='lon')*np.cos(np.deg2rad(lat))).mean(dim='lat')
+
+
+def coslat_weight(da):
+    '''
+    Weights a lat/lon gridded array with cosine(latitude)
+
+    Parameters:
+    -----------
+    da : xr.DataArray
+        Lat/lon gridded data array
+        
+    Returns:
+    --------
+    avg : xr.DataArray
+        Cosine(latitude) weighted data array
+        
+    Author: Ben Buchovecky
+    '''
+    
+    lat = da.lat
+    return da*np.cos(np.deg2rad(lat))
