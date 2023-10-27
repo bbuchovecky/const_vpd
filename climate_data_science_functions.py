@@ -45,7 +45,6 @@ def add_cartopy_gridlines(ax,
     
     Author: Ben Buchovecky
     '''
-    
     gl = ax.gridlines(linewidth=gridstyle['linewidth'],
                       linestyle=gridstyle['linestyle'],
                       color=gridstyle['color'])
@@ -55,7 +54,7 @@ def add_cartopy_gridlines(ax,
     _, y_btm = mapproj.transform_point(0, -90, ccrs.Geodetic())
     _, y_top = mapproj.transform_point(0, 90, ccrs.Geodetic())
     ax.set_ylim(y_btm, y_top)
-    
+
 
 def cyclic_contourf(ax,
                     da,
@@ -77,7 +76,6 @@ def cyclic_contourf(ax,
     
     Author: Ben Buchovecky
     '''
-    
     data,lon = add_cyclic_point(da, coord=da.lon)
     cf = ax.contourf(lon, da.lat, data, **kwargs)
     return cf
@@ -100,9 +98,9 @@ def symmetric_y_axis(ax):
     
     Author: Ben Buchovecky
     '''
-    
+   
     ax.set_ylim(-max(np.abs(ax.get_ylim())), max(np.abs(ax.get_ylim())))
-    
+
 
 def coslat_area_avg(da):
     '''
@@ -120,7 +118,6 @@ def coslat_area_avg(da):
         
     Author: Ben Buchovecky
     '''
-    
     lat = da.lat
     return (da.mean(dim='lon')*np.cos(np.deg2rad(lat))).mean(dim='lat')
 
@@ -141,6 +138,28 @@ def coslat_weight(da):
         
     Author: Ben Buchovecky
     '''
-    
     lat = da.lat
     return da*np.cos(np.deg2rad(lat))
+
+
+def symmetric_cf_levels(da, nlevels):
+    '''
+    Creates an array of contour levels symmetric about 0.
+    The min/max limit is given by the median+3*stddev
+
+    Parameters:
+    -----------
+    da : xr.DataArray
+        Data array
+
+    Returns:
+    --------
+    levels : np.ndarray
+        Array of contour levels
+
+    Author: Ben Buchovecky
+    '''
+    flattened = da.values.flatten()
+    lim = np.nanmedian(abs(flattened))+3*np.nanstd(flattened)
+    levels = np.linspace(-lim, lim, nlevels)
+    return levels
