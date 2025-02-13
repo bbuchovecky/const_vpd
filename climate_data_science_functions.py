@@ -16,6 +16,7 @@ import cartopy.mpl.ticker as cticker
 from cartopy.util import add_cyclic_point
 
 
+
 def add_cartopy_gridlines(ax,
                           mapproj,
                           lat=[-60, -30, 0, 30, 60],
@@ -98,7 +99,6 @@ def symmetric_y_axis(ax):
     
     Author: Ben Buchovecky
     '''
-   
     ax.set_ylim(-max(np.abs(ax.get_ylim())), max(np.abs(ax.get_ylim())))
 
 
@@ -163,3 +163,36 @@ def symmetric_cf_levels(da, nlevels):
     lim = np.nanmedian(abs(flattened))+3*np.nanstd(flattened)
     levels = np.linspace(-lim, lim, nlevels)
     return levels
+
+
+def weighted_average(da, weights, lat_bnds=[-90,90]):
+    '''
+    Calculates a weighted average along the latitude and longitude
+    dimensions within a given latitude range from an array of 
+    gridcell weights.
+    
+    Parameters:
+    -----------
+    da : xr.DataArray
+        Data array
+    weights : xr.DataArray or np.array
+        Array of gridcell weights
+    lat_bnds : list
+        Minimum and maximum latitude bounds. The default bounds are
+        the entire globe [-90,90]N
+
+    Returns:
+    --------
+    weighted : xr.DataArray
+        Weighted spatial average.
+
+    Author: Ben Buchovecky
+    '''
+    if lat_bnds != [-90,90]:
+        weights = weights.where((weights.lat>=lat_bnds[0]) & (weights.lat<lat_bnds[1]))
+        weights = weights / weights.mean(dim=['lon','lat'])
+
+    weighted = (da * weights).where(weights != 0)
+    weighted = weighted.where((da.lat>=lat_bnds[0]) & (da.lat<lat_bnds[1]))
+    weighted = weighted.mean(dim=['lat','lon'])
+    return weighted
